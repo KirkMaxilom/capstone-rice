@@ -13,7 +13,7 @@ include '../config/db.php';
 $error = "";
 
 /**
- * ✅ AJAX: Add Supplier (modal)
+ * AJAX: Add Supplier (modal)
  */
 if(isset($_POST['ajax']) && $_POST['ajax'] === 'add_supplier'){
     header('Content-Type: application/json; charset=utf-8');
@@ -68,23 +68,15 @@ if(isset($_POST['ajax']) && $_POST['ajax'] === 'add_supplier'){
 }
 
 /**
- * ✅ STOCK IN (Receiving)
- * - Creates purchases row
- * - Logs inventory_transactions (reference_type='purchase', type='in')
- * - Creates account_payable ONLY if total_amount > 0
- *
- * NOTE:
- * Stock is computed from inventory_transactions. We do NOT update products.stock_kg.
+ * STOCK IN (Receiving)
  */
 if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['ajax'])){
     $product_id    = (int)($_POST['product_id'] ?? 0);
     $supplier_id   = (int)($_POST['supplier_id'] ?? 0);
     $purchase_date = $_POST['purchase_date'] ?? date('Y-m-d');
     $due_date      = $_POST['due_date'] ?? null;
-
     $qty_kg        = (float)($_POST['qty_kg'] ?? 0);
     $unit_cost     = (float)($_POST['unit_cost'] ?? 0);
-
     $note          = trim($_POST['note'] ?? '');
 
     if($product_id <= 0 || $supplier_id <= 0){
@@ -94,59 +86,38 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['ajax'])){
     } elseif($unit_cost < 0){
         $error = "Unit cost must be 0 or higher.";
     } else {
-
-        // Compute total amount (AP basis)
         $total_amount = $qty_kg * $unit_cost;
-
-        // If no due date provided AND total_amount > 0, default to +7 days
-        // If total_amount == 0, due_date is irrelevant (no payable created)
         if(!$due_date && $total_amount > 0){
             $due_date = date('Y-m-d', strtotime($purchase_date . ' +7 days'));
         }
 
         $conn->begin_transaction();
         try {
-            // 1) Create purchase
             $purchase_status = 'received';
-
-            $stmtP = $conn->prepare("
-                INSERT INTO purchases (supplier_id, purchase_date, total_amount, status, created_by, created_at)
-                VALUES (?, ?, ?, ?, ?, NOW())
-            ");
+            $stmtP = $conn->prepare("INSERT INTO purchases (supplier_id, purchase_date, total_amount, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
             if(!$stmtP){ throw new Exception("Prepare failed (purchases): ".$conn->error); }
             $stmtP->bind_param("isdsi", $supplier_id, $purchase_date, $total_amount, $purchase_status, $user_id);
             $stmtP->execute();
             $purchase_id = (int)$conn->insert_id;
             $stmtP->close();
 
-            // 2) Create Accounts Payable ONLY IF total_amount > 0
-            // This prevents "₱0 unpaid" payables from appearing in supplier_payables.php
             if($total_amount > 0){
                 $amount_paid = 0.00;
                 $balance     = $total_amount;
                 $ap_status   = 'unpaid';
 
-                $stmtAP = $conn->prepare("
-                    INSERT INTO account_payable
-                      (purchase_id, supplier_id, total_amount, amount_paid, balance, due_date, status, approved, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())
-                ");
+                $stmtAP = $conn->prepare("INSERT INTO account_payable (purchase_id, supplier_id, total_amount, amount_paid, balance, due_date, status, approved, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())");
                 if(!$stmtAP){ throw new Exception("Prepare failed (account_payable): ".$conn->error); }
                 $stmtAP->bind_param("iidddss", $purchase_id, $supplier_id, $total_amount, $amount_paid, $balance, $due_date, $ap_status);
                 $stmtAP->execute();
                 $stmtAP->close();
             }
 
-            // 3) Log inventory transaction (IN)
             $reference_type = 'purchase';
             $type = 'in';
             if($note === "") $note = "Stock received (Receiving)";
 
-            $stmt2 = $conn->prepare("
-                INSERT INTO inventory_transactions
-                    (product_id, qty_kg, reference_id, reference_type, type, note, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, NOW())
-            ");
+            $stmt2 = $conn->prepare("INSERT INTO inventory_transactions (product_id, qty_kg, reference_id, reference_type, type, note, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
             if(!$stmt2){ throw new Exception("Prepare failed (inventory_transactions): ".$conn->error); }
             $stmt2->bind_param("idisss", $product_id, $qty_kg, $purchase_id, $reference_type, $type, $note);
             $stmt2->execute();
@@ -176,37 +147,27 @@ $suppliers = $conn->query("SELECT supplier_id, name FROM suppliers WHERE status=
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
-body { background:#f4f6f9;  padding-top: 60px; }
-
-/* Sidebar */
-.sidebar { min-height:100vh; background:#2c3e50; padding-top: 0px ;}
-.sidebar .nav-link { color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#34495e; }
-
-/* Dropdown submenu */
-.sidebar .submenu { padding-left:35px; }
-.sidebar .submenu a { font-size:.9rem; padding:6px 0; display:block; color:#ecf0f1; text-decoration:none; }
-.sidebar .submenu a:hover { color:#fff; }
-
-/* Cards */
+body { background:#f4f6f9; }
 .modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:.3s; }
 .modern-card:hover { transform:translateY(-4px); }
-
-/* Navbar spacing */
-.main-content { padding-top:0px; }
+.main-content {
+    padding-top: 70px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
 </style>
 </head>
 
-<body>
+<body class="with-sidebar">
+
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 240px; width: calc(100% - 240px); z-index: 1020;">
   <div class="container-fluid">
-    <button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
-      ☰
-    </button>
     <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
@@ -221,61 +182,8 @@ body { background:#f4f6f9;  padding-top: 60px; }
   </div>
 </nav>
 
-<div class="container-fluid">
-<div class="row">
-
-<!-- SIDEBAR -->
-<nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-<div class="pt-4">
-<ul class="nav flex-column gap-1">
-
-<li class="nav-item">
-<a class="nav-link" href="../admin/dashboard.php">
-<i class="fas fa-home me-2"></i>Dashboard
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link active" data-bs-toggle="collapse" href="#inventoryMenu">
-<i class="fas fa-warehouse me-2"></i>Inventory
-<i class="fas fa-chevron-down float-end"></i>
-</a>
-<div class="collapse show submenu" id="inventoryMenu">
-<a href="../admin/products.php">Products</a>
-<a href="../inventory/add_stock.php" class="fw-bold">Stock In (Receiving)</a>
-<a href="../inventory/adjust_stock.php">Stock Adjustments</a>
-<a href="../inventory/inventory.php">Inventory Logs</a>
-</div>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="../admin/users.php"><i class="fas fa-users me-2"></i>User Management</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="../admin/sales.php">
-<i class="fas fa-cash-register me-2"></i>Sales
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="../admin/analytics.php">
-<i class="fas fa-chart-line me-2"></i>Analytics & Forecasting
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="../admin/system_logs.php">
-<i class="fas fa-archive me-2"></i>System Logs
-</a>
-</li>
-
-</ul>
-</div>
-</nav>
-
 <!-- Main Content -->
-<main class="col-lg-10 ms-sm-auto px-4 main-content">
+<main class="main-content">
 
 <h2 class="mb-3">Stock In (Receiving)</h2>
 
@@ -366,9 +274,6 @@ body { background:#f4f6f9;  padding-top: 60px; }
 </div>
 
 </main>
-
-</div>
-</div>
 
 <!-- Add Supplier Modal -->
 <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-hidden="true">

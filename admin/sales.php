@@ -102,104 +102,32 @@ return 'bg-secondary';
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
-body { background:#f4f6f9; padding-top: 60px; }
-
-/* Sidebar */
-.sidebar { min-height:100vh; background:#2c3e50; padding-top: 0px; }
-.sidebar .nav-link { color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#34495e; }
-
-/* Dropdown submenu */
-.sidebar .submenu { padding-left:35px; }
-.sidebar .submenu a { font-size:.9rem; padding:6px 0; display:block; color:#ecf0f1; text-decoration:none; }
-.sidebar .submenu a:hover { color:#fff; }
+body { background:#f4f6f9; }
 
 /* Cards */
 .modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:.3s; }
 .modern-card:hover { transform:translateY(-4px); }
 
-/* Navbar spacing */
-.main-content { padding-top:0px; }
-
 /* Gradients */
 .bg-gradient-primary {background:linear-gradient(135deg,#1d2671,#c33764);}
 .bg-gradient-success {background:linear-gradient(135deg,#11998e,#38ef7d);}
 
-/* ✅ Modal safety (para di mag glitch/backdrop issues) */
+/* Modal safety */
 .modal { z-index: 1055; }
 .modal-backdrop { z-index: 1050; }
 </style>
 </head>
 
-<body>
+<body class="with-sidebar">
 
-<!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-<div class="container-fluid">
-<button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">☰</button>
-<span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
-
-<div class="ms-auto dropdown">
-<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-<?= h($username) ?>
-</a>
-<ul class="dropdown-menu dropdown-menu-end">
-<li><a class="dropdown-item" href="profile.php">Profile</a></li>
-<li><a class="dropdown-item text-danger" href="../logout.php">Logout</a></li>
-</ul>
-</div>
-</div>
-</nav>
-
-<div class="container-fluid">
-<div class="row">
-
-<!-- SIDEBAR -->
-<nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-<div class="pt-4">
-<ul class="nav flex-column gap-1">
-
-<li class="nav-item">
-<a class="nav-link" href="dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" data-bs-toggle="collapse" href="#inventoryMenu">
-<i class="fas fa-warehouse me-2"></i>Inventory
-<i class="fas fa-chevron-down float-end"></i>
-</a>
-<div class="collapse submenu" id="inventoryMenu">
-<a href="products.php">Products</a>
-<a href="../inventory/add_stock.php">Stock In (Receiving)</a>
-<a href="../inventory/adjust_stock.php">Stock Adjustments</a>
-<a href="../inventory/inventory.php">Inventory Logs</a>
-</div>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="users.php"><i class="fas fa-users me-2"></i>User Management</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link active" href="sales.php"><i class="fas fa-cash-register me-2"></i>Sales</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="analytics.php"><i class="fas fa-chart-line me-2"></i>Analytics & Forecasting</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="system_logs.php"><i class="fas fa-archive me-2"></i>System Logs</a>
-</li>
-
-</ul>
-</div>
-</nav>
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- Main Content -->
-<main class="col-lg-10 ms-sm-auto px-4 main-content">
+<main class="main-content">
+<div class="container-fluid">
 
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 <div>
@@ -310,7 +238,7 @@ View
 </div>
 </div>
 
-<!-- ✅ MODALS OUTSIDE TABLE (fix glitch) -->
+<!-- MODALS OUTSIDE TABLE -->
 <?php if(count($salesRows) > 0): ?>
 <?php foreach($salesRows as $row): ?>
 <?php
@@ -386,10 +314,6 @@ $itemsRes = $itemsStmt->get_result();
 
 </main>
 
-</div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-    

@@ -145,24 +145,14 @@ if(count($salesData) > 0){
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
-body { background:#f4f6f9; padding-top: 60px; }
-
-/* Sidebar */
-.sidebar { min-height:100vh; background:#2c3e50; padding-top: 0; }
-.sidebar .nav-link { color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#34495e; }
-.sidebar .submenu { padding-left:35px; }
-.sidebar .submenu a { font-size:.9rem; padding:6px 0; display:block; color:#ecf0f1; text-decoration:none; }
-.sidebar .submenu a:hover { color:#fff; }
+body { background:#f4f6f9; }
 
 /* Cards */
 .modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:.3s; }
 .modern-card:hover { transform:translateY(-4px); }
-
-/* Navbar spacing */
-.main-content { padding-top:0; }
 
 /* Gradients */
 .bg-gradient-primary {background:linear-gradient(135deg,#1d2671,#c33764);}
@@ -173,15 +163,22 @@ body { background:#f4f6f9; padding-top: 60px; }
 
 .table td, .table th { padding:0.55rem; vertical-align: middle; }
 .badge-soft { background: rgba(25,135,84,.15); color:#198754; }
+
+.main-content {
+    padding-top: 70px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
 </style>
 </head>
 
-<body>
+<body class="with-sidebar">
+
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 240px; width: calc(100% - 240px); z-index: 1020;">
   <div class="container-fluid">
-    <button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">☰</button>
     <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
@@ -196,73 +193,8 @@ body { background:#f4f6f9; padding-top: 60px; }
   </div>
 </nav>
 
-<div class="container-fluid">
-<div class="row">
-
-<!-- OWNER SIDEBAR -->
-<nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-  <div class="pt-4">
-    <ul class="nav flex-column gap-1">
-
-      <li class="nav-item">
-        <a class="nav-link active" href="dashboard.php">
-          <i class="fas fa-gauge-high me-2"></i>Owner Dashboard
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="inventory_monitoring.php">
-          <i class="fas fa-boxes-stacked me-2"></i>Inventory Monitoring
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="sales_report.php">
-          <i class="fas fa-receipt me-2"></i>Sales Reports
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="collapse" href="#financeMenu">
-          <i class="fas fa-coins me-2"></i>Finance
-          <i class="fas fa-chevron-down float-end"></i>
-        </a>
-        <div class="collapse submenu" id="financeMenu">
-          <a href="../owner/supplier_payables.php">Supplier Payables</a>
-        </div>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="returns_report.php">
-          <i class="fas fa-rotate-left me-2"></i>Returns Report
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="analytics.php">
-          <i class="fas fa-chart-line me-2"></i>Analytics & Forecasting
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="system_logs.php">
-          <i class="fas fa-file-shield me-2"></i>System Logs
-        </a>
-      </li>
-
-    </ul>
-
-    <div class="px-3 mt-4">
-      <div class="alert alert-light small mb-0">
-        <i class="fa-solid fa-circle-info me-1"></i>
-        Owner access is <b>monitoring + finance approval</b>.
-      </div>
-    </div>
-  </div>
-</nav>
-
 <!-- MAIN CONTENT -->
-<main class="col-lg-10 ms-sm-auto px-4 main-content">
+<main class="main-content">
 <div class="py-4">
 
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -497,9 +429,6 @@ body { background:#f4f6f9; padding-top: 60px; }
 
 </div>
 </main>
-
-</div>
-</div>
 
 <script>
 // Sales chart

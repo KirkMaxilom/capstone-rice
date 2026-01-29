@@ -1,4 +1,6 @@
 <?php
+define('BASE_URL', '/capstone-rice/');
+
 $host = "localhost";
 $user = "root";
 $pass = "";

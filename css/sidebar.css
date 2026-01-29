@@ -1,0 +1,130 @@
+/* Sidebar Component Styles */
+
+.sidebar-component {
+    width: 260px; /* Expanded width to accommodate text */
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
+    transition: width 0.3s;
+}
+
+.sidebar-logo {
+    width: 50px;
+    height: 50px;
+    background: #5B4FFF;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+    align-self: center;
+}
+
+.sidebar-logo-icon {
+    width: 30px;
+    height: 30px;
+    border: 3px solid white;
+    border-radius: 4px;
+}
+
+/* General navigation item style */
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 8px;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.3s, background-color 0.3s;
+    text-decoration: none;
+}
+
+.sidebar-nav-item:hover {
+    background-color: #f0f0f1;
+    color: #000;
+}
+
+.sidebar-nav-item.active {
+    background-color: #5B4FFF;
+    color: #ffffff;
+}
+
+/* Icon style within a nav item */
+.sidebar-nav-item .sidebar-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.sidebar-nav-item .sidebar-nav-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Text style within a nav item */
+.sidebar-nav-text {
+    flex-grow: 1;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Dropdown arrow */
+.sidebar-nav-item .ms-auto svg {
+    transition: transform 0.3s;
+}
+
+.sidebar-nav-item[aria-expanded="true"] .ms-auto svg {
+    transform: rotate(180deg);
+}
+
+/* Collapsible menu styles */
+.collapse .sidebar-nav-item {
+    padding-left: 58px; /* Indent sub-items */
+    color: #666;
+    background-color: transparent;
+}
+
+.collapse .sidebar-nav-item.active {
+    color: #5B4FFF;
+    background-color: transparent;
+    font-weight: bold;
+}
+
+.collapse .sidebar-nav-item:hover {
+    color: #000;
+    background-color: #f0f0f1;
+}
+
+.sidebar-spacer {
+    flex: 1;
+}
+
+/* This class should be added to the <body> tag of any page using the sidebar */
+body.with-sidebar {
+    margin-left: 260px; /* Match sidebar width */
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    body.with-sidebar {
+        margin-left: 0; /* No margin on smaller screens */
+    }
+
+    .main-content {
+        padding-top: 60px; /* Ensure content isn't hidden by top nav */
+    }
+
+    .sidebar-component {
+        /* When collapsed on smaller screens, it will be managed by Bootstrap's collapse class */
+        /* You will need a button to toggle it */
+    }
+}
