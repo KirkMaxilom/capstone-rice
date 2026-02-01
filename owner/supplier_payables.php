@@ -338,12 +338,14 @@ if($view_ap_id > 0){
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
-body { background:#f4f6f9; padding-top:70px; }
+body { background:#f4f6f9; }
 .modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
 .table td, .table th { vertical-align: middle; }
 .small-muted { font-size:.9rem; color:#6c757d; }
+.main-content { padding-top:70px; padding-left: 20px; padding-right: 20px; }
 
 .badge-unapproved { background:#6c757d; }
 .badge-approved { background:#0d6efd; }
@@ -361,14 +363,14 @@ body { background:#f4f6f9; padding-top:70px; }
 .nav-pills .nav-link{ border-radius:999px; }
 </style>
 </head>
-<body>
+<body class="with-sidebar">
+
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- Top Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 260px; width: calc(100% - 260px); z-index: 1020;">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold ms-2" href="../owner/dashboard.php">
-      <i class="fa-solid fa-coins me-2"></i>Finance • Supplier Payables
-    </a>
+    <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
       <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
@@ -382,7 +384,8 @@ body { background:#f4f6f9; padding-top:70px; }
   </div>
 </nav>
 
-<div class="container-fluid px-4">
+<main class="main-content">
+<div class="container-fluid">
 
   <?php if($success): ?>
     <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
@@ -634,6 +637,7 @@ body { background:#f4f6f9; padding-top:70px; }
   </div>
 
 </div>
+</main>
 
 <!-- History Modal (server-rendered) -->
 <?php if($viewAP): ?>

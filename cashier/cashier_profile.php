@@ -114,32 +114,42 @@ exit;
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
-body{ background:#f4f6f9; }
-.main-content{ padding-top:90px; }
+body { background:#f4f6f9; }
+.main-content {
+    padding-top: 70px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
 .card{ border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
 </style>
 </head>
-<body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-<div class="container-fluid">
-<span class="navbar-brand fw-bold">DE ORO HIYS GENERAL MERCHANDISE</span>
+<body class="with-sidebar">
 
-<div class="ms-auto dropdown">
-<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-<?= h($username) ?> (Cashier)
-</a>
-<ul class="dropdown-menu dropdown-menu-end">
-<li><a class="dropdown-item" href="dashboard.php">Dashboard</a></li>
-<li><a class="dropdown-item text-danger" href="../logout.php">Logout</a></li>
-</ul>
-</div>
-</div>
+<?php include '../includes/sidebar.php'; ?>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 220px; width: calc(100% - 220px); z-index: 1020;">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
+        <div class="ms-auto dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                <?= h($username) ?> <small class="text-muted">(Cashier)</small>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="cashier_profile.php"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item text-danger" href="../logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+            </ul>
+        </div>
+    </div>
 </nav>
 
-<div class="container main-content">
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+<div class="container">
 <div class="row g-4">
 
 <?php if($success): ?>
@@ -209,12 +219,13 @@ body{ background:#f4f6f9; }
 
 <button class="btn btn-outline-dark w-100">Update Password</button>
 </form>
+
 </div>
 </div>
 </div>
 
 </div>
-</div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

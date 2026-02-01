@@ -6,6 +6,7 @@ if(!isset($_SESSION['user_id'])){
 }
 $username = $_SESSION['username'] ?? 'User';
 include '../config/db.php';
+require_once 'InventoryAnalytics.php';
 
 /* =========================
    SALES PER PRODUCT
@@ -62,9 +63,7 @@ if($count >= 2 && $salesData[$count-2] > 0){
 }
 
 /* =========================
-   FORECAST PLACEHOLDER (NEXT 3 MONTHS)
-   Method: Simple Moving Average (SMA)
-   - If not enough data, use demo values
+   FORECAST LOGIC (VIA SERVICE)
 ========================= */
 function nextMonthsLabels($n = 3){
     $labels = [];
@@ -75,29 +74,10 @@ function nextMonthsLabels($n = 3){
     }
     return $labels;
 }
-
 $forecastLabels = nextMonthsLabels(3);
-$forecastData = [];
 
-// Simple Moving Average window (last 3 months)
-$window = 3;
-
-if(count($salesData) >= 3){
-    $last = $salesData;
-    for($i=0;$i<3;$i++){
-        $slice = array_slice($last, -$window);
-        $avg = array_sum($slice) / count($slice);
-        $forecastData[] = round($avg, 2);
-        $last[] = $avg; // extend series
-    }
-} elseif(count($salesData) > 0) {
-    // Not enough history: use last known month as baseline
-    $baseline = end($salesData);
-    $forecastData = [round($baseline,2), round($baseline,2), round($baseline,2)];
-} else {
-    // No history at all: placeholder demo numbers
-    $forecastData = [120.00, 130.00, 125.00];
-}
+// Use the service function
+$forecastData = calculateForecastFromMonthlySales($salesData, 3);
 
 // Combined labels + values for a single chart with forecast continuation
 $combinedLabels = array_merge($months, $forecastLabels);
@@ -117,6 +97,30 @@ for($i=0;$i<count($forecastLabels);$i++){
         'pred' => $forecastData[$i]
     ];
 }
+
+/* =========================
+   INVENTORY HEALTH (DAYS OF COVER)
+========================= */
+$productStock = [];
+// Fetch current stock. Note: Using defaults for lead/safety days to ensure compatibility.
+$sql = "SELECT product_id, variety, grade, stock_kg FROM products WHERE archived = 0";
+$res = $conn->query($sql);
+if($res){
+    while ($row = $res->fetch_assoc()) {
+        $productStock[$row['product_id']] = $row;
+    }
+}
+
+$inventoryMetrics = [];
+foreach ($productStock as $pid => $p) {
+    $metrics = calculateDaysOfCover(
+        (float)$p['stock_kg'],
+        $forecastData[0], // Using global forecast as baseline
+        7, // Default Lead Time (days)
+        3  // Default Safety Stock (days)
+    );
+    $inventoryMetrics[$pid] = array_merge($p, $metrics);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -127,23 +131,13 @@ for($i=0;$i<count($forecastLabels);$i++){
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { background:#f4f6f9; padding-top: 60px; }
+body { background:#f4f6f9; }
 
-/* Sidebar */
-.sidebar { min-height:100vh; background:#2c3e50; padding-top: 0px}
-.sidebar .nav-link { color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#34495e; }
-
-/* Dropdown submenu */
-.sidebar .submenu { padding-left:35px; }
-.sidebar .submenu a { font-size:.9rem; padding:6px 0; display:block; color:#ecf0f1; text-decoration:none; }
-.sidebar .submenu a:hover { color:#fff; }
-
-/* Main */
-.main-content { padding-top:0px; }
+.main-content { padding-top:70px; }
 
 /* Analytics */
 .analytics-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
@@ -155,6 +149,10 @@ body { background:#f4f6f9; padding-top: 60px; }
 }
 .bar { background:#eaeaea; border-radius:6px; overflow:hidden; }
 .bar div { background:#2f5bff; color:#fff; padding:4px 8px; font-size:.8rem; }
+
+.risk-red { background-color: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+.risk-yellow { background-color: #fff3e0; color: #ef6c00; border-left: 4px solid #ef6c00; }
+.risk-green { background-color: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
 
 .analytics-summary { display:flex; gap:40px; margin-top:30px; flex-wrap:wrap; }
 .positive { color:green; }
@@ -170,61 +168,29 @@ body { background:#f4f6f9; padding-top: 60px; }
 </style>
 </head>
 
-<body>
+<body class="with-sidebar">
+
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 240px; width: calc(100% - 240px); z-index: 1020;">
   <div class="container-fluid">
-    <button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">☰</button>
     <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
-      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
         <?= htmlspecialchars($username) ?>
       </a>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><a class="dropdown-item" href="profile.php">Profile</a></li>
-        <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
+        <li><a class="dropdown-item text-danger" href="../logout.php">Logout</a></li>
       </ul>
     </div>
   </div>
 </nav>
 
-<div class="container-fluid">
-<div class="row">
-
-<!-- SIDEBAR -->
-<nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-<div class="pt-4">
-<ul class="nav flex-column gap-1">
-<li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a></li>
-
-<li class="nav-item">
-<a class="nav-link" data-bs-toggle="collapse" href="#inventoryMenu">
-<i class="fas fa-warehouse me-2"></i>Inventory <i class="fas fa-chevron-down float-end"></i>
-</a>
-<div class="collapse submenu" id="inventoryMenu">
-<a href="products.php">Products</a>
-<a href="../inventory/add_stock.php">Stock In (Receiving)</a>
-<a href="../inventory/adjust_stock.php">Stock Adjustments</a>
-<a href="../inventory/inventory.php">Inventory Logs</a>
-</div>
-</li>
-
-
-<li class="nav-item">
-<a class="nav-link" href="users.php"><i class="fas fa-users me-2"></i>User Management</a>
-</li>
-
-<li class="nav-item"><a class="nav-link" href="sales.php"><i class="fas fa-cash-register me-2"></i>Sales</a></li>
-<li class="nav-item"><a class="nav-link active" href="analytics.php"><i class="fas fa-chart-line me-2"></i>Analytics & Forecasting</a></li>
-<li class="nav-item"><a class="nav-link" href="../admin/system_logs.php"><i class="fas fa-archive me-2"></i>System Logs</a></li>
-</ul>
-</div>
-</nav>
-
 <!-- MAIN CONTENT -->
-<main class="col-lg-10 ms-sm-auto px-4 main-content">
+<main class="main-content px-4">
 
 <h3 class="fw-bold mb-2">Smart Analytics</h3>
 <p>Sales trends, forecasting, and reports</p>
@@ -293,6 +259,43 @@ body { background:#f4f6f9; padding-top: 60px; }
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+</div><!-- end analytics-row -->
+
+<!-- INVENTORY HEALTH SECTION -->
+<div class="analytics-box mt-4">
+  <h5 class="fw-bold mb-3">Inventory Health (Days of Cover)</h5>
+  <p class="text-muted small">Estimated coverage based on next month's global forecast demand.</p>
+  
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Product</th>
+          <th>Current Stock</th>
+          <th>Est. Daily Demand</th>
+          <th>Days of Cover</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach($inventoryMetrics as $m): ?>
+          <?php 
+            $riskClass = 'risk-'.$m['risk_band']; 
+            $statusLabel = strtoupper($m['risk_band'] === 'red' ? 'Critical' : ($m['risk_band'] === 'yellow' ? 'Low' : 'Healthy'));
+          ?>
+          <tr class="<?= $riskClass ?>">
+            <td><?= htmlspecialchars($m['variety'] . ' - ' . $m['grade']) ?></td>
+            <td><?= number_format($m['stock_kg'], 2) ?> kg</td>
+            <td><?= $m['forecast_daily'] ?> kg/day</td>
+            <td class="fw-bold"><?= $m['days_of_cover'] ?> days</td>
+            <td><?= $statusLabel ?></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
   </div>
 </div>
 

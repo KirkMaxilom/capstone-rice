@@ -73,21 +73,20 @@ function sale_items($conn, $sale_id){
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
 body { background:#f4f6f9; }
-.sidebar { min-height:100vh; background:#2c3e50; }
-.sidebar .nav-link { color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#34495e; }
 .modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
-.main-content { padding-top:85px; }
+.main-content { padding-top:70px; padding-left: 20px; padding-right: 20px; }
 </style>
 </head>
-<body>
+<body class="with-sidebar">
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<?php include '../includes/sidebar.php'; ?>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 260px; width: calc(100% - 260px); z-index: 1020;">
   <div class="container-fluid">
-    <button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">☰</button>
     <span class="navbar-brand fw-bold ms-2">DO HIVES GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
@@ -101,33 +100,8 @@ body { background:#f4f6f9; }
   </div>
 </nav>
 
+<main class="main-content">
 <div class="container-fluid">
-<div class="row">
-
-<nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-  <div class="pt-4">
-    <ul class="nav flex-column gap-1">
-      <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="fas fa-gauge-high me-2"></i>Owner Dashboard</a></li>
-      <li class="nav-item"><a class="nav-link" href="inventory_monitoring.php"><i class="fas fa-boxes-stacked me-2"></i>Inventory Monitoring</a></li>
-      <li class="nav-item"><a class="nav-link" href="sales_report.php"><i class="fas fa-receipt me-2"></i>Sales Reports</a></li>
-      <li class="nav-item"><a class="nav-link" href="returns_report.php"><i class="fas fa-rotate-left me-2"></i>Returns Report</a></li>
-      <li class="nav-item"><a class="nav-link" href="analytics.php"><i class="fas fa-chart-line me-2"></i>Analytics & Forecasting</a></li>
-      <li class="nav-item"><a class="nav-link" href="system_logs.php"><i class="fas fa-file-shield me-2"></i>System Logs</a></li>
-
-      <li class="nav-item"><a class="nav-link active" href="pending_sales.php"><i class="fa-solid fa-circle-check me-2"></i>Sales for Approval</a></li>
-      <li class="nav-item"><a class="nav-link" href="ar_ap_monitoring.php"><i class="fa-solid fa-scale-balanced me-2"></i>AR / AP Monitoring</a></li>
-    </ul>
-
-    <div class="px-3 mt-4">
-      <div class="alert alert-light small mb-0">
-        <i class="fa-solid fa-circle-info me-1"></i> Approve paid/partial sales for audit.
-      </div>
-    </div>
-  </div>
-</nav>
-
-<main class="col-lg-10 ms-sm-auto px-4 main-content">
-<div class="py-4">
 
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <div>
@@ -242,9 +216,6 @@ body { background:#f4f6f9; }
 
 </div>
 </main>
-
-</div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

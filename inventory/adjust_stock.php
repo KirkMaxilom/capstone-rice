@@ -115,7 +115,7 @@ $current_stock = (float)$currentStockRow['current_stock'];
 body { background:#f4f6f9; }
 
 /* Page-specific styles */
-.main-content { padding-top: 20px; }
+.main-content { padding-top: 70px; }
 
 .modern-card {
     border-radius:14px;
@@ -144,6 +144,23 @@ body { background:#f4f6f9; }
 <body class="with-sidebar">
 
 <?php include '../includes/sidebar.php'; ?>
+
+<!-- TOP NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 240px; width: calc(100% - 240px); z-index: 1020;">
+  <div class="container-fluid">
+    <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
+
+    <div class="ms-auto dropdown">
+      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+        <?= htmlspecialchars($username) ?>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="../admin/profile.php">Profile</a></li>
+        <li><a class="dropdown-item text-danger" href="../logout.php">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">

@@ -329,62 +329,43 @@ if(isset($_POST['checkout'])){
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
-body{ background:#f4f6f9; padding-top:60px; }
-.sidebar{ min-height:100vh; background:#2c3e50; padding-top: 0px; }
-.sidebar .nav-link{ color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover,.sidebar .nav-link.active{ background:#34495e; }
-.main-content{ padding-top:0px; }
+body { background:#f4f6f9; }
+.main-content {
+    padding-top: 70px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
 .modern-card{ border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
 .table td,.table th{ vertical-align:middle; }
-.small-muted{ color:#6c757d; font-size:.85rem; }
 </style>
 </head>
 
-<body>
+<body class="with-sidebar">
 
-<!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-  <div class="container-fluid">
-    <button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">☰</button>
-    <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
+<?php include '../includes/sidebar.php'; ?>
 
-    <div class="ms-auto dropdown">
-      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-        <?= h($username) ?> <small class="text-muted">(Cashier)</small>
-      </a>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="../profile.php"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
-        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
-      </ul>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 220px; width: calc(100% - 220px); z-index: 1020;">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
+        <div class="ms-auto dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                <?= h($username) ?> <small class="text-muted">(Cashier)</small>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="cashier_profile.php"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item text-danger" href="../logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+            </ul>
+        </div>
     </div>
-  </div>
 </nav>
 
-<div class="container-fluid">
-  <div class="row">
+<!-- MAIN CONTENT -->
+<main class="main-content">
 
-    <!-- CASHIER SIDEBAR -->
-    <nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-      <div class="pt-4">
-        <ul class="nav flex-column gap-1 px-2">
-          <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="fas fa-home me-2"></i>Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link active" href="pos.php"><i class="fas fa-cash-register me-2"></i>Sale</a></li>
-          <li class="nav-item"><a class="nav-link" href="sales_history.php"><i class="fas fa-receipt me-2"></i>Sales History</a></li>
-          <li class="nav-item"><a class="nav-link" href="payments.php"><i class="fas fa-hand-holding-dollar me-2"></i>Utang Payments</a></li>
-          <li class="nav-item"><a class="nav-link" href="returns.php"><i class="fas fa-rotate-left me-2"></i>Returns</a></li>
-          <li class="nav-item"><a class="nav-link" href="customers.php"><i class="fas fa-users me-2"></i>Customers</a></li>
-          <li class="nav-item"><a class="nav-link" href="inventory_view.php"><i class="fas fa-boxes-stacked me-2"></i>Inventory View</a></li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- MAIN -->
-    <main class="col-lg-10 ms-sm-auto px-4 main-content">
-      <div class="py-4">
-
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
           <div>
             <h3 class="fw-bold mb-1">Sale</h3>
             <div class="text-muted">Create sales (Cash or Utang). Stock updates automatically.</div>
@@ -523,166 +504,322 @@ body{ background:#f4f6f9; padding-top:60px; }
             </div>
           </div>
 
-        </div><!-- row -->
-      </div>
-    </main>
+        
 
-  </div>
-</div>
+                </div><!-- row -->
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+              </div>
 
-<script>
-const products = <?= json_encode($products) ?>;
+            </main>
 
-function peso(n){
-  return (Number(n||0)).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
-}
+        
 
-function formatISODate(y, m, d){
-  const mm = String(m).padStart(2,'0');
-  const dd = String(d).padStart(2,'0');
-  return `${y}-${mm}-${dd}`;
-}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-// Client display only (server still enforces due date)
-function computeKinsenasDueDateClient(){
-  const now = new Date();
-  const year = now.getFullYear();
-  const monthIndex = now.getMonth(); // 0-11
-  const day = now.getDate();
+        
 
-  const kinsenas = [2, 15, 25, 30];
+        <script>
 
-  // last day of current month
-  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+        const products = <?= json_encode($products) ?>;
 
-  for (const k of kinsenas){
-    if(day <= k && k <= lastDay){
-      return formatISODate(year, monthIndex + 1, k);
-    }
-  }
+        
 
-  // next month 2
-  let ny = year, nm = monthIndex + 2; // month number 1-12
-  if(nm === 13){ nm = 1; ny = year + 1; }
-  return formatISODate(ny, nm, 2);
-}
+        function peso(n){
 
-function toggleDueDate(){
-  const t = document.getElementById('sale_type').value;
-  const wrap = document.getElementById('dueDateWrap');
-  wrap.classList.toggle('d-none', t !== 'utang');
+          return (Number(n||0)).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
 
-  if(t === 'utang'){
-    const due = computeKinsenasDueDateClient();
-    const dueInput = document.getElementById('dueDateText');
-    if(dueInput) dueInput.value = due;
-  }
-}
+        }
 
-function addRow(){
-  const tbody = document.querySelector('#itemsTable tbody');
-  const tr = document.createElement('tr');
+        
 
-  // Product select
-  const tdProd = document.createElement('td');
-  const sel = document.createElement('select');
-  sel.name = "product_id[]";
-  sel.className = "form-select form-select-sm";
-  sel.required = true;
-  sel.innerHTML = `<option value="">Select product</option>` + products.map(p => {
-    const label = `${p.variety} - ${p.grade} (₱${peso(p.unit_price)})`;
-    return `<option value="${p.product_id}" data-price="${p.unit_price}" data-stock="${p.stock_kg}">${label}</option>`;
-  }).join('');
-  sel.onchange = () => fillRow(tr);
-  tdProd.appendChild(sel);
+        function formatISODate(y, m, d){
 
-  // Stock
-  const tdStock = document.createElement('td');
-  tdStock.innerHTML = `<span class="badge bg-secondary">0.00 kg</span>`;
+          const mm = String(m).padStart(2,'0');
 
-  // Qty
-  const tdQty = document.createElement('td');
-  const qty = document.createElement('input');
-  qty.type = "number";
-  qty.step = "0.01";
-  qty.min = "0";
-  qty.name = "qty_kg[]";
-  qty.className = "form-control form-control-sm";
-  qty.required = true;
-  qty.oninput = () => recalc(tr);
-  tdQty.appendChild(qty);
+          const dd = String(d).padStart(2,'0');
 
-  // Price
-  const tdPrice = document.createElement('td');
-  const price = document.createElement('input');
-  price.type = "number";
-  price.step = "0.01";
-  price.min = "0";
-  price.name = "unit_price[]";
-  price.className = "form-control form-control-sm";
-  price.required = true;
-  price.oninput = () => recalc(tr);
-  tdPrice.appendChild(price);
+          return `${y}-${mm}-${dd}`;
 
-  // Line total
-  const tdLine = document.createElement('td');
-  tdLine.innerHTML = `<span class="fw-bold">₱0.00</span>`;
+        }
 
-  // Remove btn
-  const tdX = document.createElement('td');
-  const btn = document.createElement('button');
-  btn.type = "button";
-  btn.className = "btn btn-sm btn-outline-danger";
-  btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
-  btn.onclick = () => { tr.remove(); recalcAll(); };
-  tdX.appendChild(btn);
+        
 
-  tr.appendChild(tdProd);
-  tr.appendChild(tdStock);
-  tr.appendChild(tdQty);
-  tr.appendChild(tdPrice);
-  tr.appendChild(tdLine);
-  tr.appendChild(tdX);
+        // Client display only (server still enforces due date)
 
-  tbody.appendChild(tr);
-}
+        function computeKinsenasDueDateClient(){
 
-function fillRow(tr){
-  const sel = tr.querySelector('select');
-  const opt = sel.options[sel.selectedIndex];
-  const stock = Number(opt.getAttribute('data-stock') || 0);
-  const prc = Number(opt.getAttribute('data-price') || 0);
+          const now = new Date();
 
-  tr.children[1].innerHTML = `<span class="badge bg-info text-dark">${peso(stock)} kg</span>`;
-  tr.querySelector('input[name="unit_price[]"]').value = prc ? prc : '';
-  recalc(tr);
-}
+          const year = now.getFullYear();
 
-function recalc(tr){
-  const qty = Number(tr.querySelector('input[name="qty_kg[]"]').value || 0);
-  const prc = Number(tr.querySelector('input[name="unit_price[]"]').value || 0);
-  const line = qty * prc;
-  tr.children[4].innerHTML = `<span class="fw-bold">₱${peso(line)}</span>`;
-  recalcAll();
-}
+          const monthIndex = now.getMonth(); // 0-11
 
-function recalcAll(){
-  let total = 0;
-  document.querySelectorAll('#itemsTable tbody tr').forEach(tr => {
-    const qty = Number(tr.querySelector('input[name="qty_kg[]"]').value || 0);
-    const prc = Number(tr.querySelector('input[name="unit_price[]"]').value || 0);
-    total += qty * prc;
-  });
-  document.getElementById('grandTotal').innerText = peso(total);
-}
+          const day = now.getDate();
 
-// Start with 1 row
-addRow();
-toggleDueDate();
-</script>
+        
 
-</body>
-</html>
-```
+          const kinsenas = [2, 15, 25, 30];
+
+        
+
+          // last day of current month
+
+          const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+
+        
+
+          for (const k of kinsenas){
+
+            if(day <= k && k <= lastDay){
+
+              return formatISODate(year, monthIndex + 1, k);
+
+            }
+
+          }
+
+        
+
+          // next month 2
+
+          let ny = year, nm = monthIndex + 2; // month number 1-12
+
+          if(nm === 13){ nm = 1; ny = year + 1; }
+
+          return formatISODate(ny, nm, 2);
+
+        }
+
+        
+
+        function toggleDueDate(){
+
+          const t = document.getElementById('sale_type').value;
+
+          const wrap = document.getElementById('dueDateWrap');
+
+          wrap.classList.toggle('d-none', t !== 'utang');
+
+        
+
+          if(t === 'utang'){
+
+            const due = computeKinsenasDueDateClient();
+
+            const dueInput = document.getElementById('dueDateText');
+
+            if(dueInput) dueInput.value = due;
+
+          }
+
+        }
+
+        
+
+        function addRow(){
+
+          const tbody = document.querySelector('#itemsTable tbody');
+
+          const tr = document.createElement('tr');
+
+        
+
+          // Product select
+
+          const tdProd = document.createElement('td');
+
+          const sel = document.createElement('select');
+
+          sel.name = "product_id[]";
+
+          sel.className = "form-select form-select-sm";
+
+          sel.required = true;
+
+          sel.innerHTML = `<option value="">Select product</option>` + products.map(p => {
+
+            const label = `${p.variety} - ${p.grade} (₱${peso(p.unit_price)})`;
+
+            return `<option value="${p.product_id}" data-price="${p.unit_price}" data-stock="${p.stock_kg}">${label}</option>`;
+
+          }).join('');
+
+          sel.onchange = () => fillRow(tr);
+
+          tdProd.appendChild(sel);
+
+        
+
+          // Stock
+
+          const tdStock = document.createElement('td');
+
+          tdStock.innerHTML = `<span class="badge bg-secondary">0.00 kg</span>`;
+
+        
+
+          // Qty
+
+          const tdQty = document.createElement('td');
+
+          const qty = document.createElement('input');
+
+          qty.type = "number";
+
+          qty.step = "0.01";
+
+          qty.min = "0";
+
+          qty.name = "qty_kg[]";
+
+          qty.className = "form-control form-control-sm";
+
+          qty.required = true;
+
+          qty.oninput = () => recalc(tr);
+
+          tdQty.appendChild(qty);
+
+        
+
+          // Price
+
+          const tdPrice = document.createElement('td');
+
+          const price = document.createElement('input');
+
+          price.type = "number";
+
+          price.step = "0.01";
+
+          price.min = "0";
+
+          price.name = "unit_price[]";
+
+          price.className = "form-control form-control-sm";
+
+          price.required = true;
+
+          price.oninput = () => recalc(tr);
+
+          tdPrice.appendChild(price);
+
+        
+
+          // Line total
+
+          const tdLine = document.createElement('td');
+
+          tdLine.innerHTML = `<span class="fw-bold">₱0.00</span>`;
+
+        
+
+          // Remove btn
+
+          const tdX = document.createElement('td');
+
+          const btn = document.createElement('button');
+
+          btn.type = "button";
+
+          btn.className = "btn btn-sm btn-outline-danger";
+
+          btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+
+          btn.onclick = () => { tr.remove(); recalcAll(); };
+
+          tdX.appendChild(btn);
+
+        
+
+          tr.appendChild(tdProd);
+
+          tr.appendChild(tdStock);
+
+          tr.appendChild(tdQty);
+
+          tr.appendChild(tdPrice);
+
+          tr.appendChild(tdLine);
+
+          tr.appendChild(tdX);
+
+        
+
+          tbody.appendChild(tr);
+
+        }
+
+        
+
+        function fillRow(tr){
+
+          const sel = tr.querySelector('select');
+
+          const opt = sel.options[sel.selectedIndex];
+
+          const stock = Number(opt.getAttribute('data-stock') || 0);
+
+          const prc = Number(opt.getAttribute('data-price') || 0);
+
+        
+
+          tr.children[1].innerHTML = `<span class="badge bg-info text-dark">${peso(stock)} kg</span>`;
+
+          tr.querySelector('input[name="unit_price[]"]').value = prc ? prc : '';
+
+          recalc(tr);
+
+        }
+
+        
+
+        function recalc(tr){
+
+          const qty = Number(tr.querySelector('input[name="qty_kg[]"]').value || 0);
+
+          const prc = Number(tr.querySelector('input[name="unit_price[]"]').value || 0);
+
+          const line = qty * prc;
+
+          tr.children[4].innerHTML = `<span class="fw-bold">₱${peso(line)}</span>`;
+
+          recalcAll();
+
+        }
+
+        
+
+        function recalcAll(){
+
+          let total = 0;
+
+          document.querySelectorAll('#itemsTable tbody tr').forEach(tr => {
+
+            const qty = Number(tr.querySelector('input[name="qty_kg[]"]').value || 0);
+
+            const prc = Number(tr.querySelector('input[name="unit_price[]"]').value || 0);
+
+            total += qty * prc;
+
+          });
+
+          document.getElementById('grandTotal').innerText = peso(total);
+
+        }
+
+        
+
+        // Start with 1 row
+
+        addRow();
+
+        toggleDueDate();
+
+        </script>
+
+        
+
+        </body>
+
+        </html>```

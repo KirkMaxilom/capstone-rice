@@ -235,7 +235,7 @@ body { background:#f4f6f9; }
 <td><?= htmlspecialchars($row['sku']) ?></td>
 <td><?= number_format($stock,2) ?><?= $lowBadge ?></td>
 <td><?= number_format((float)$row['unit_price'],2) ?></td>
-<td><?= htmlspecialchars($row['delivery_date']) ?></td>
+<td><?= htmlspecialchars($row['delivery_date'] ?? '') ?></td>
 <td><span class="badge bg-primary">Active</span></td>
 <td class="text-nowrap">
     <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#editProductModal<?= (int)$row['product_id'] ?>">
@@ -285,7 +285,7 @@ body { background:#f4f6f9; }
 <div class="mb-2">
   <label>Delivery Date</label>
   <input class="form-control" type="date" name="delivery_date"
-         value="<?= htmlspecialchars($row['delivery_date']) ?>" required>
+         value="<?= htmlspecialchars($row['delivery_date'] ?? '') ?>" required>
 </div>
 
 <div class="alert alert-info mt-2 mb-0">

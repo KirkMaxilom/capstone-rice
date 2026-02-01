@@ -125,6 +125,23 @@ body { background:#f4f6f9; }
 
 <?php include '../includes/sidebar.php'; ?>
 
+<!-- TOP NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 240px; width: calc(100% - 240px); z-index: 1020;">
+  <div class="container-fluid">
+    <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
+
+    <div class="ms-auto dropdown">
+      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+        <?= htmlspecialchars($username) ?>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="profile.php">Profile</a></li>
+        <li><a class="dropdown-item text-danger" href="../logout.php">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
 <!-- Main Content -->
 <main class="main-content">
 <div class="container-fluid">

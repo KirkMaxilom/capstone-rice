@@ -57,17 +57,20 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 
 <style>
 body{ background:#f4f6f9; }
-.main-content{ padding-top:90px; }
+.main-content{ padding-top:80px; }
 .modern-card{ border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
 </style>
 </head>
-<body>
+<body class="with-sidebar">
+
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 260px; width: calc(100% - 260px);">
 <div class="container-fluid">
 <span class="navbar-brand fw-bold ms-2">DO HIVES GENERAL MERCHANDISE</span>
 <div class="ms-auto">
@@ -78,7 +81,7 @@ body{ background:#f4f6f9; }
 </div>
 </nav>
 
-<main class="container main-content">
+<main class="container main-content" style="margin-left: 260px;">
 <div class="row justify-content-center">
 <div class="col-lg-6">
 

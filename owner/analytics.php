@@ -5,6 +5,7 @@ if(strtolower($_SESSION['role'] ?? '') !== 'owner'){ header("Location: ../login.
 
 $username = $_SESSION['username'] ?? 'Owner';
 include '../config/db.php';
+require_once '../admin/InventoryAnalytics.php';
 
 /* =========================
    ANALYTICS (Last 12 months)
@@ -55,26 +56,37 @@ $totalKg12 = (float)($summary['total_kg'] ?? 0);
 $totalRev12 = (float)($summary['total_rev'] ?? 0);
 $totalSales12 = (int)($summary['total_sales'] ?? 0);
 
-// Forecast placeholder based on last month values
-$forecastLabels = ["Next Month", "+2 Months", "+3 Months"];
-$forecastKg = [0,0,0];
-$forecastRev = [0,0,0];
-
-if(count($kgData) > 0){
-  $lastKg = (float)$kgData[count($kgData)-1];
-  $forecastKg = [
-    round($lastKg * 1.03, 2),
-    round($lastKg * 1.05, 2),
-    round($lastKg * 1.08, 2),
-  ];
+// Forecast Logic (Real)
+function nextMonthsLabels($n = 3){
+    $labels = [];
+    $dt = new DateTime('first day of this month');
+    for($i=1;$i<=$n;$i++){
+        $dt->modify('+1 month');
+        $labels[] = $dt->format('M Y');
+    }
+    return $labels;
 }
-if(count($revData) > 0){
-  $lastRev = (float)$revData[count($revData)-1];
-  $forecastRev = [
-    round($lastRev * 1.03, 2),
-    round($lastRev * 1.05, 2),
-    round($lastRev * 1.08, 2),
-  ];
+$forecastLabels = nextMonthsLabels(3);
+$forecastKg = calculateForecastFromMonthlySales($kgData, 3);
+$forecastRev = calculateForecastFromMonthlySales($revData, 3);
+
+/* =========================
+   INVENTORY HEALTH (DAYS OF COVER)
+========================= */
+$productStock = [];
+$sql = "SELECT product_id, variety, grade, stock_kg FROM products WHERE archived = 0";
+$res = $conn->query($sql);
+if($res){
+    while ($row = $res->fetch_assoc()) {
+        $productStock[$row['product_id']] = $row;
+    }
+}
+
+$inventoryMetrics = [];
+foreach ($productStock as $pid => $p) {
+    // Using global forecast (kg) as baseline for demand
+    $metrics = calculateDaysOfCover((float)$p['stock_kg'], $forecastKg[0], 7, 3);
+    $inventoryMetrics[$pid] = array_merge($p, $metrics);
 }
 
 // Avg price per kg (rough KPI)
@@ -89,37 +101,29 @@ $avgPricePerKg = ($totalKg12 > 0) ? ($totalRev12 / $totalKg12) : 0;
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/sidebar.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { background:#f4f6f9; padding-top: 60px; }
-.sidebar { min-height:100vh; background:#2c3e50; padding: 0px; }
-.sidebar .nav-link { color:#fff; padding:10px 16px; border-radius:8px; font-size:.95rem; }
-.sidebar .nav-link:hover, .sidebar .nav-link.active { background:#34495e; }
+body { background:#f4f6f9; }
 
 .modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
-.main-content { padding-top:0px; }
+.main-content { padding-top:70px; padding-left: 20px; padding-right: 20px; }
 
 .badge-soft { background: rgba(25,135,84,.15); color:#198754; }
-/* Finance dropdown submenu */
-.sidebar .submenu { padding-left: 35px; }
-.sidebar .submenu a {
-  font-size: .9rem;
-  padding: 6px 0;
-  display: block;
-  color: #ecf0f1;
-  text-decoration: none;
-}
-.sidebar .submenu a:hover { color:#fff; }
-.sidebar .submenu a.active-sub { font-weight:700; color:#fff; }
+
+.risk-red { background-color: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+.risk-yellow { background-color: #fff3e0; color: #ef6c00; border-left: 4px solid #ef6c00; }
+.risk-green { background-color: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
 </style>
 </head>
-<body>
+<body class="with-sidebar">
+
+<?php include '../includes/sidebar.php'; ?>
 
 <!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 260px; width: calc(100% - 260px); z-index: 1020;">
   <div class="container-fluid">
-    <button class="btn btn-outline-dark d-lg-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">☰</button>
     <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
@@ -133,81 +137,9 @@ body { background:#f4f6f9; padding-top: 60px; }
   </div>
 </nav>
 
-<div class="container-fluid">
-<div class="row">
-
-<!-- SIDEBAR -->
-<!-- SIDEBAR -->
-<nav id="sidebarMenu" class="col-lg-2 d-lg-block sidebar collapse">
-  <div class="pt-4">
-    <ul class="nav flex-column gap-1">
-
-      <li class="nav-item">
-        <a class="nav-link" href="dashboard.php">
-          <i class="fas fa-gauge-high me-2"></i>Owner Dashboard
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="inventory_monitoring.php">
-          <i class="fas fa-boxes-stacked me-2"></i>Inventory Monitoring
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="sales_report.php">
-          <i class="fas fa-receipt me-2"></i>Sales Reports
-        </a>
-      </li>
-
-      <!-- ✅ FINANCE DROPDOWN -->
-      <?php $isFinance = in_array(basename($_SERVER['PHP_SELF']), ['supplier_payables.php','customer_receivables.php']); ?>
-      <li class="nav-item">
-        <a class="nav-link <?= $isFinance ? 'active' : '' ?>" data-bs-toggle="collapse" href="#financeMenu" role="button"
-           aria-expanded="<?= $isFinance ? 'true' : 'false' ?>" aria-controls="financeMenu">
-          <i class="fas fa-coins me-2"></i>Finance
-          <i class="fas fa-chevron-down float-end"></i>
-        </a>
-
-        <div class="collapse submenu <?= $isFinance ? 'show' : '' ?>" id="financeMenu">
-          <a href="supplier_payables.php" class="<?= basename($_SERVER['PHP_SELF'])==='supplier_payables.php' ? 'active-sub' : '' ?>">
-            Supplier Payables (AP)
-          </a>
-        </div>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="returns_report.php">
-          <i class="fas fa-rotate-left me-2"></i>Returns Report
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link active" href="analytics.php">
-          <i class="fas fa-chart-line me-2"></i>Analytics & Forecasting
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="system_logs.php">
-          <i class="fas fa-file-shield me-2"></i>System Logs
-        </a>
-      </li>
-
-    </ul>
-
-    <div class="px-3 mt-4">
-      <div class="alert alert-light small mb-0">
-        <i class="fa-solid fa-circle-info me-1"></i> Owner access is <b>view-only</b>.
-      </div>
-    </div>
-  </div>
-</nav>
-
-
 <!-- MAIN -->
-<main class="col-lg-10 ms-sm-auto px-4 main-content">
-<div class="py-4">
+<main class="main-content">
+<div class="container-fluid">
 
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <div>
@@ -278,24 +210,58 @@ body { background:#f4f6f9; padding-top: 60px; }
       <div class="card modern-card">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="fw-bold mb-0">Forecast (Placeholder)</h5>
-            <span class="badge badge-soft">Coming soon</span>
+            <h5 class="fw-bold mb-0">Forecast (Next 3 Months)</h5>
+            <span class="badge badge-soft">SMA Model</span>
           </div>
           <canvas id="forecastChart" height="140"></canvas>
           <div class="mt-3 text-muted small">
             <i class="fa-solid fa-flask me-1"></i>
-            This is a simple projection based on last month. You can replace it later with your real forecasting method.
+            Projection based on Simple Moving Average (SMA) of last 3 months.
           </div>
         </div>
       </div>
     </div>
   </div>
 
-</div>
-</main>
+  <!-- INVENTORY HEALTH SECTION -->
+  <div class="card modern-card mt-4">
+    <div class="card-body">
+      <h5 class="fw-bold mb-3">Inventory Health (Days of Cover)</h5>
+      <p class="text-muted small">Estimated coverage based on next month's global forecast demand.</p>
+      
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Product</th>
+              <th>Current Stock</th>
+              <th>Est. Daily Demand</th>
+              <th>Days of Cover</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach($inventoryMetrics as $m): ?>
+              <?php 
+                $riskClass = 'risk-'.$m['risk_band']; 
+                $statusLabel = strtoupper($m['risk_band'] === 'red' ? 'Critical' : ($m['risk_band'] === 'yellow' ? 'Low' : 'Healthy'));
+              ?>
+              <tr class="<?= $riskClass ?>">
+                <td><?= htmlspecialchars($m['variety'] . ' - ' . $m['grade']) ?></td>
+                <td><?= number_format($m['stock_kg'], 2) ?> kg</td>
+                <td><?= $m['forecast_daily'] ?> kg/day</td>
+                <td class="fw-bold"><?= $m['days_of_cover'] ?> days</td>
+                <td><?= $statusLabel ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 </div>
-</div>
+</main>
 
 <script>
 const months = <?= json_encode($months) ?>;

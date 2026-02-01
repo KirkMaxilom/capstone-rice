@@ -11,6 +11,7 @@ if(strtolower($_SESSION['role'] ?? '') !== 'owner'){
 
 $username = $_SESSION['username'] ?? 'Owner';
 include '../config/db.php';
+require_once '../admin/InventoryAnalytics.php';
 
 /* =========================
    OWNER DASHBOARD METRICS
@@ -123,17 +124,18 @@ if($monthly){
     }
 }
 
-// Forecast placeholder
-$forecastLabels = ["Next Month","+2 Months","+3 Months"];
-$forecastValues = [0,0,0];
-if(count($salesData) > 0){
-    $last = (float)$salesData[count($salesData)-1];
-    $forecastValues = [
-        round($last * 1.03, 2),
-        round($last * 1.05, 2),
-        round($last * 1.08, 2),
-    ];
+// Forecast Logic (Real)
+function nextMonthsLabels($n = 3){
+    $labels = [];
+    $dt = new DateTime('first day of this month');
+    for($i=1;$i<=$n;$i++){
+        $dt->modify('+1 month');
+        $labels[] = $dt->format('M Y');
+    }
+    return $labels;
 }
+$forecastLabels = nextMonthsLabels(3);
+$forecastValues = calculateForecastFromMonthlySales($salesData, 3);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -144,15 +146,16 @@ if(count($salesData) > 0){
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="../css/sidebar.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body { background:#f4f6f9; }
 
-/* Cards */
-.modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); transition:.3s; }
-.modern-card:hover { transform:translateY(-4px); }
+.modern-card { border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.12); }
+.main-content { padding-top:70px; padding-left: 20px; padding-right: 20px; }
+
+.badge-soft { background: rgba(25,135,84,.15); color:#198754; }
 
 /* Gradients */
 .bg-gradient-primary {background:linear-gradient(135deg,#1d2671,#c33764);}
@@ -162,13 +165,6 @@ body { background:#f4f6f9; }
 .bg-gradient-danger {background:linear-gradient(135deg,#e52d27,#b31217);}
 
 .table td, .table th { padding:0.55rem; vertical-align: middle; }
-.badge-soft { background: rgba(25,135,84,.15); color:#198754; }
-
-.main-content {
-    padding-top: 70px;
-    padding-left: 20px;
-    padding-right: 20px;
-}
 </style>
 </head>
 
@@ -177,12 +173,12 @@ body { background:#f4f6f9; }
 <?php include '../includes/sidebar.php'; ?>
 
 <!-- TOP NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 240px; width: calc(100% - 240px); z-index: 1020;">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top" style="margin-left: 260px; width: calc(100% - 260px); z-index: 1020;">
   <div class="container-fluid">
     <span class="navbar-brand fw-bold ms-2">DE ORO HIYS GENERAL MERCHANDISE</span>
 
     <div class="ms-auto dropdown">
-      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+      <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
         <?= htmlspecialchars($username) ?> <small class="text-muted">(Owner)</small>
       </a>
       <ul class="dropdown-menu dropdown-menu-end">
@@ -195,7 +191,7 @@ body { background:#f4f6f9; }
 
 <!-- MAIN CONTENT -->
 <main class="main-content">
-<div class="py-4">
+<div class="container-fluid">
 
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <div>
@@ -344,13 +340,13 @@ body { background:#f4f6f9; }
       <div class="card modern-card">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="fw-bold mb-0">Forecast (Placeholder)</h5>
-            <span class="badge badge-soft">Coming soon</span>
+            <h5 class="fw-bold mb-0">Forecast (Next 3 Months)</h5>
+            <span class="badge badge-soft">SMA Model</span>
           </div>
           <canvas id="forecastChart" height="140"></canvas>
           <div class="mt-3 text-muted small">
             <i class="fa-solid fa-flask me-1"></i>
-            Forecasting will be enabled after data gathering (e.g., at least 2–3 months of sales history).
+            Projection based on Simple Moving Average (SMA) of last 3 months.
           </div>
         </div>
       </div>
